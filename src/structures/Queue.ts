@@ -32,6 +32,8 @@ export class Queue extends Array<Track | UnresolvedTrack> {
   /** The previous track */
   public previous: Track | UnresolvedTrack | null = null;
 
+  public pointer: number | null = null;
+
   /**
    * Adds a track to the queue.
    * @param track
@@ -46,11 +48,14 @@ export class Queue extends Array<Track | UnresolvedTrack> {
     }
 
     if (!this.current) {
+      this.pointer = 0;
+
       if (!Array.isArray(track)) {
+        this.push(track);
         this.current = track;
         return;
       } else {
-        this.current = (track = [...track]).shift();
+        this.current = (track = [...track])[0];
       }
     }
 

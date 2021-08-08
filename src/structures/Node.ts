@@ -319,9 +319,11 @@ export class Node {
     // If a track had an error while starting
     if (["LOAD_FAILED", "CLEAN_UP"].includes(payload.reason)) {
       player.queue.previous = player.queue.current;
-      player.queue.current = player.queue.shift();
+      player.queue.splice(player.queue.pointer, 1);
+      
+      if (!player.queue.length) return this.queueEnd(player, track, payload);
 
-      if (!player.queue.current) return this.queueEnd(player, track, payload);
+      player.queue.current = player.queue[player.queue.pointer];
 
       this.manager.emit("trackEnd", player, track, payload);
       if (this.manager.options.autoPlay) player.play();
@@ -334,7 +336,7 @@ export class Node {
       return;
     }
 
-    // If a track ended and is track repeating
+    /*// If a track ended and is track repeating
     if (track && player.trackRepeat) {
       if (payload.reason === "STOPPED") {
         player.queue.previous = player.queue.current;
@@ -346,9 +348,9 @@ export class Node {
       this.manager.emit("trackEnd", player, track, payload);
       if (this.manager.options.autoPlay) player.play();
       return;
-    }
+    }*/
 
-    // If a track ended and is track repeating
+    /*// If a track ended and is track repeating
     if (track && player.queueRepeat) {
       player.queue.previous = player.queue.current;
 
@@ -363,12 +365,23 @@ export class Node {
       this.manager.emit("trackEnd", player, track, payload);
       if (this.manager.options.autoPlay) player.play();
       return;
-    }
+    }*/
 
     // If there is another song in the queue
-    if (player.queue.length) {
+    if (player.queue.pointer < player.queue.length - 1) {
       player.queue.previous = player.queue.current;
-      player.queue.current = player.queue.shift();
+      player.queue.current = player.queue[++player.queue.pointer];
+
+      this.manager.emit("trackEnd", player, track, payload);
+      if (this.manager.options.autoPlay) player.play();
+      return;
+    }
+
+    // If there are no songs in the queue, but queueRepeat
+    if (player.queue.pointer >= player.queue.length - 1 && player.queueRepeat) {
+      player.queue.previous = player.queue.current;
+      player.queue.pointer = 0;
+      player.queue.current = player.queue[0];
 
       this.manager.emit("trackEnd", player, track, payload);
       if (this.manager.options.autoPlay) player.play();
@@ -376,11 +389,12 @@ export class Node {
     }
 
     // If there are no songs in the queue
-    if (!player.queue.length) return this.queueEnd(player, track, payload);
+    if (player.queue.pointer >= player.queue.length - 1) return this.queueEnd(player, track, payload);
   }
 
 
   protected queueEnd(player: Player, track: Track, payload: TrackEndEvent): void {
+    player.queue.pointer = null;
     player.queue.current = null;
     player.playing = false;
     this.manager.emit("queueEnd", player, track, payload);

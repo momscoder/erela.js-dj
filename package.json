@@ -1,6 +1,6 @@
 {
   "name": "erela.js-dj",
-  "version": "2.3.3",
+  "version": "2.3.3-dj",
   "description": "An easy-to-use Lavalink client for NodeJS with removed queue.shift for my bot",
   "main": "dist/index.js",
   "types": "typings/index.d.ts",
