@@ -47,7 +47,7 @@ export class Queue extends Array<Track | UnresolvedTrack> {
       throw new RangeError('Track must be a "Track" or "Track[]".');
     }
 
-    if (!this.current) {
+    if (!this.current && !this.length) {
       this.pointer = 0;
 
       if (!Array.isArray(track)) {
@@ -75,6 +75,11 @@ export class Queue extends Array<Track | UnresolvedTrack> {
     } else {
       if (track instanceof Array) this.splice(offset, 0, ...track);
       else this.splice(offset, 0, track);
+    }
+
+    if(!this.current && this.length) {
+      this.pointer = this.length - 1;
+      this.current = this[this.pointer];
     }
   }
 
